@@ -1,22 +1,18 @@
-#!/usr/bin/env python3
 # Created by kamimura on 2018/07/21.
 # Copyright © 2018 kamimura. All rights reserved.
-
 import sys
+import datetime
 from antlr4 import *
 from SIONLexer import SIONLexer
 from SIONParser import SIONParser
 from SIONVisitor import SIONVisitor
 
-import datetime
 
-
-def load(filename: str, encoding='utf-8') -> object:
-    fs = FileStream(filename, encoding='utf-8')
-    lexer = SIONLexer(fs)
+def load(file) -> object:
+    stream = InputStream(file.read())
+    lexer = SIONLexer(stream)
     tokens = CommonTokenStream(lexer)
     parser = SIONParser(tokens)
-    # tree = parser.si_self()
     tree = parser.si_self()
     visitor = SIONVisitor()
     return visitor.visit(tree)
@@ -28,7 +24,7 @@ def str_esc(s):
     return s
 
 
-def dump_file(obj, file):
+def dump(obj, file):
     t = type(obj)
     if obj is None:
         print('nil', file=file, end='')
@@ -49,9 +45,9 @@ def dump_file(obj, file):
         print(f'[', file=file, end='')
         if len(obj) > 0:
             for o in obj[:-1]:
-                dump_file(o, file)
+                dump(o, file)
                 print(',', file=file, end='')
-            dump_file(obj[-1], file)
+            dump(obj[-1], file)
         print(']', file=file, end='')
     elif t == dict:
         print('[', file=file, end='')
@@ -59,24 +55,22 @@ def dump_file(obj, file):
         if len(ks) == 0:
             print(':', file=file, end='')
         elif len(ks) == 1:
-            dump_file(ks[0], file)
+            dump(ks[0], file)
             print(':', file=file, end='')
-            dump_file(obj[ks[0]], file)
+            dump(obj[ks[0]], file)
         else:
             for k in ks[:-1]:
-                dump_file(k, file)
+                dump(k, file)
                 print(':', file=file, end='')
-                dump_file(obj[k], file)
+                dump(obj[k], file)
                 print(',', file=file, end='')
-            dump_file(ks[-1], file)
+            dump(ks[-1], file)
             print(':', file=file, end='')
-            dump_file(obj[ks[-1]], file)
+            dump(obj[ks[-1]], file)
         print(']', file=file, end='')
-
-
-def dump(obj, filename):
-    with open(filename, 'w') as file:
-        dump_file(obj, file)
+    else:
+        raise TypeError(
+            f"Object of type '{obj.__class__.__name__}' is not SION serializable")
 
 
 if __name__ == '__main__':
@@ -84,6 +78,8 @@ if __name__ == '__main__':
         filename = sys.argv[1]
     else:
         filename = '../test/t.sion'
-    obj = load(filename)
+    with open(filename) as f:
+        obj = load(f)
     print(obj)
-    dump(obj, '../test/output.sion')
+    with open('../test/output.sion', 'w') as f:
+        dump(obj, f)
