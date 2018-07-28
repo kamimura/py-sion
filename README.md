@@ -4,13 +4,26 @@
 
 ## Synopsis
 
+stream
+
+text
 ```python
 import sion
 #...
 with open('spam.sion') as f:
-     obj = sion.load(f)
+    obj = sion.load(f)
 with open('eggs.sion', 'w') as f:     
-     sion.dump(obj, f)
+    sion.dump(obj, f)
+#...
+```
+bytes
+```python
+import sion
+#...
+from urllib.request import urlopen
+#...
+with urlopen(ham) as res:
+    obj = load(res)
 #...
 ```
 

@@ -8,8 +8,11 @@ from SIONParser import SIONParser
 from SIONVisitor import SIONVisitor
 
 
-def load(file) -> object:
-    stream = InputStream(file.read())
+def load(file, encoding: str='utf-8', errors: str='strict') -> object:
+    data = file.read()
+    if type(data) == bytes:
+        data = data.decode(encoding, errors)
+    stream = InputStream(data)
     lexer = SIONLexer(stream)
     tokens = CommonTokenStream(lexer)
     parser = SIONParser(tokens)

@@ -8,7 +8,7 @@ with open('README.md') as fh:
     long_description = fh.read()
 setuptools.setup(
     name='sion',
-    version='0.1.2',
+    version='0.1.3',
     author='kamimura',
     author_email='kamimura@live.jp',
     license='MIT',
