@@ -19,7 +19,6 @@ with open('eggs.sion', 'w') as f:
 bytes
 ```python
 import sion
-#...
 from urllib.request import urlopen
 #...
 with urlopen(ham) as res:
@@ -27,6 +26,14 @@ with urlopen(ham) as res:
 #...
 ```
 
+string
+```python
+import sion
+#...
+spam = sion.load('sion data')
+eggs = sion.dumps(spam)
+#...
+```
 ## Usage
 
 ```sh

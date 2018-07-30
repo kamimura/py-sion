@@ -21,6 +21,18 @@ def load(file, encoding: str='utf-8', errors: str='strict') -> object:
     return visitor.visit(tree)
 
 
+def loads(s):
+    if type(s) == bytes:
+        s = s.decode()
+    stream = InputStream(s)
+    lexer = SIONLexer(stream)
+    tokens = CommonTokenStream(lexer)
+    parser = SIONParser(tokens)
+    tree = parser.si_self()
+    visitor = SIONVisitor()
+    return visitor.visit(tree)
+
+
 def str_esc(s):
     for o, n in [('"', '\\"'), ('\n', '\\n'), ('\r', '\\r'), ('\\', '\\\\')]:
         s = s.replace(o, n)
@@ -74,6 +86,47 @@ def dump(obj, file):
     else:
         raise TypeError(
             f"Object of type '{obj.__class__.__name__}' is not SION serializable")
+
+
+def dumps(obj: object):
+    t = type(obj)
+    if obj is None:
+        return 'nil'
+    if t == bool:
+        if obj:
+            return 'true'
+        return 'false'
+    if t in {int, float}:
+        return str(obj)
+    if t == str:
+        return f'"{str_esc(obj)}"'
+    if t == bytes:
+        return f'.Data("{str(obj)[2:-1]}")'
+    if t == datetime.datetime:
+        return f'.Date({t.timestamp(obj)})'
+    if t in {list, tuple}:
+        res = '['
+        if len(obj) > 0:
+            for o in obj[:-1]:
+                res += dumps(o) + ','
+            res += dumps(obj[-1])
+        res += ']'
+        return res
+    if t == dict:
+        res = '['
+        ks = list(obj.keys())
+        if len(ks) == 0:
+            res += ':'
+        elif len(ks) == 1:
+            res += dumps(ks[0]) + ':' + dumps(obj[ks[0]])
+        else:
+            for k in ks[:-1]:
+                res += dumps(k) + ':' + str(obj[k]) + ','
+            res += dumps(ks[-1]) + ':' + dumps(obj[ks[-1]])
+        res += ']'
+        return res
+    raise TypeError(
+        f"Object of type '{obj.__class__.__name__}' is not SION serializable")
 
 
 if __name__ == '__main__':

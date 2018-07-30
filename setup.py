@@ -8,7 +8,7 @@ with open('README.md') as fh:
     long_description = fh.read()
 setuptools.setup(
     name='sion',
-    version='0.1.3',
+    version='0.2.0',
     author='kamimura',
     author_email='kamimura@live.jp',
     license='MIT',
@@ -24,5 +24,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Environment :: Console"
     ),
-    install_requires=['antlr4-python3-runtime']
+    install_requires=['antlr4-python3-runtime'],
+    package_dir={'': 'src'},
 )

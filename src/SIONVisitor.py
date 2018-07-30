@@ -52,17 +52,16 @@ class SIONVisitor(ParseTreeVisitor):
     # Visit a parse tree produced by SIONParser#si_dict_pairs.
     def visitSi_dict_pairs(self, ctx: SIONParser.Si_dict_pairsContext):
         kvs = [self.visit(t) for t in ctx.si_dict_pair()]
-        d = {}
-        for k, v in kvs:
-            if type(k) in [list, dict]:
-                d[str(k)] = v
-            else:
-                d[k] = v
-        return d
+        return {k: v for k, v in kvs}
 
     # Visit a parse tree produced by SIONParser#si_dict_pair.
     def visitSi_dict_pair(self, ctx: SIONParser.Si_dict_pairContext):
-        return [self.visit(t) for t in ctx.si_self()]
+        k, v = [self.visit(t) for t in ctx.si_self()]
+        if isinstance(k, list):
+            k = tuple(k)
+        elif isinstance(k, dict):
+            k = tuple((s, t) for s, t in k.items())
+        return (k, v)
 
     # Visit a parse tree produced by SIONParser#si_literal.
     def visitSi_literal(self, ctx: SIONParser.Si_literalContext):
