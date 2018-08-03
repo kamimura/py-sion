@@ -10,7 +10,7 @@ from SIONVisitor import SIONVisitor
 
 def load(file, encoding: str='utf-8', errors: str='strict') -> object:
     data = file.read()
-    if type(data) == bytes:
+    if isinstance(data, (bytes, bytearray)):
         data = data.decode(encoding, errors)
     stream = InputStream(data)
     lexer = SIONLexer(stream)
@@ -22,7 +22,7 @@ def load(file, encoding: str='utf-8', errors: str='strict') -> object:
 
 
 def loads(s):
-    if type(s) == bytes:
+    if isinstance(s, (bytes, bytearray)):
         s = s.decode()
     stream = InputStream(s)
     lexer = SIONLexer(stream)
@@ -40,23 +40,22 @@ def str_esc(s):
 
 
 def dump(obj, file):
-    t = type(obj)
     if obj is None:
         print('nil', file=file, end='')
-    elif t == bool:
+    elif isinstance(obj, bool):
         if obj:
             print('ture', file=file, end='')
         else:
             print('false', file=file, end='')
-    elif t in {int, float}:
+    elif isinstance(obj, (int, float)):
         print(obj, file=file, end='')
-    elif t == str:
+    elif isinstance(obj, str):
         print(f'"{str_esc(obj)}"', file=file, end='')
-    elif t == bytes:
+    elif isinstance(obj, (bytes, bytearray)):
         print(f'.Data("{str(obj)[2:-1]}")', file=file, end='')
-    elif t == datetime.datetime:
-        print(f'.Date({t.timestamp(obj)})', file=file, end='')
-    elif t in {list, tuple}:
+    elif isinstance(obj, datetime.datetime):
+        print(f'.Date({obj.timestamp()})', file=file, end='')
+    elif isinstance(obj, (list, tuple)):
         print(f'[', file=file, end='')
         if len(obj) > 0:
             for o in obj[:-1]:
@@ -64,7 +63,7 @@ def dump(obj, file):
                 print(',', file=file, end='')
             dump(obj[-1], file)
         print(']', file=file, end='')
-    elif t == dict:
+    elif isinstance(obj, dict):
         print('[', file=file, end='')
         ks = list(obj.keys())
         if len(ks) == 0:
@@ -89,22 +88,21 @@ def dump(obj, file):
 
 
 def dumps(obj: object):
-    t = type(obj)
     if obj is None:
         return 'nil'
-    if t == bool:
+    if isinstance(obj, bool):
         if obj:
             return 'true'
         return 'false'
-    if t in {int, float}:
+    if isinstance(obj, (int, float)):
         return str(obj)
-    if t == str:
+    if isinstance(obj, str):
         return f'"{str_esc(obj)}"'
-    if t == bytes:
+    if isinstance(obj, (bytes, bytearray)):
         return f'.Data("{str(obj)[2:-1]}")'
-    if t == datetime.datetime:
-        return f'.Date({t.timestamp(obj)})'
-    if t in {list, tuple}:
+    if isinstance(obj, datetime.datetime):
+        return f'.Date({obj.timestamp(obj)})'
+    if isinstance(obj, (list, tuple)):
         res = '['
         if len(obj) > 0:
             for o in obj[:-1]:
@@ -112,7 +110,7 @@ def dumps(obj: object):
             res += dumps(obj[-1])
         res += ']'
         return res
-    if t == dict:
+    if isinstance(obj, dict):
         res = '['
         ks = list(obj.keys())
         if len(ks) == 0:
@@ -130,12 +128,54 @@ def dumps(obj: object):
 
 
 if __name__ == '__main__':
+    import pprint
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     else:
         filename = '../test/t.sion'
     with open(filename) as f:
         obj = load(f)
-    print(obj)
+    pprint.pprint(obj)
     with open('../test/output.sion', 'w') as f:
         dump(obj, f)
+
+    s = '''
+[
+    "array" : [
+        nil,
+        true,
+        1,    // Int in decimal
+        1.0,  // Double in decimal
+        "one",
+        [1],
+        ["one" : 1.0]
+    ],
+    "bool" : true,
+    "data" : .Data("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"),
+    "date" : .Date(0x0p+0),
+    "dictionary" : [
+        "array" : [],
+        "bool" : false,
+        "double" : 0x0p+0,
+        "int" : 0,
+        "nil" : nil,
+        "object" : [:],
+        "string" : ""
+    ],
+    "double" : 0x1.518f5c28f5c29p+5, // Double in hexadecimal
+    "int" : -0x2a, // Int in hexadecimal
+    "nil" : nil,
+   "string" : "漢字、カタカナ、ひらがなの入ったstring😇",
+    "url" : "https://github.com/dankogai/",
+    nil   : "Unlike JSON and Property Lists,",
+    true  : "Yes, SION",
+    1     : "does accept",
+    1.0   : "non-String keys.",
+    []    : "like",
+    [:]   : "Map of ECMAScript."
+]
+'''
+    obj = loads(s)
+    pprint.pprint(obj)
+    s = dumps(obj)
+    print(s)

@@ -30,7 +30,7 @@ string
 ```python
 import sion
 #...
-spam = sion.load('sion data')
+spam = sion.loads('sion data')
 eggs = sion.dumps(spam)
 #...
 ```
