@@ -34,7 +34,10 @@ spam = sion.loads('sion data')
 eggs = sion.dumps(spam)
 #...
 ```
-## Usage
+
+[Here](http://sitekamimura.blogspot.com/search/label/SION) are some other examples.
+
+## Installation
 
 ```sh
 $ pip3 install sion
